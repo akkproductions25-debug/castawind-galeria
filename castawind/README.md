@@ -2,7 +2,7 @@
 
 Web propia (React + Vite + TypeScript) que lee las fotos de una carpeta de Google Drive mediante una Netlify Function y las muestra con diseño propio. Las fotos **no** se suben a Netlify.
 
-- Previsualización (≈1920 px) y miniaturas: las genera Google Drive; el navegador las pide directamente a Google.
+- Previsualización (≈1920 px) y miniaturas: se piden directamente a Google con `drive.google.com/thumbnail?id=ID&sz=wNNN` (archivos públicos), con `lh3.googleusercontent.com/d/ID=wNNN` como alternativa. No se usan los enlaces `drive-storage` de la API, que dan error 400.
 - Original: botón "Descargar original" → Drive entrega el archivo sin tocar.
 - Toda la colección: botón que abre la carpeta en Drive para descargarla desde allí (no se genera ZIP en el navegador).
 - La clave de Google vive solo en Netlify (variable de entorno), nunca en el código del navegador.
@@ -39,7 +39,7 @@ Como la carpeta es pública, basta una clave de API; no hace falta OAuth ni cuen
 ### 6. Publicar en Netlify
 1. Crea cuenta en netlify.com (puedes entrar con GitHub).
 2. **Add new site → Import an existing project → GitHub** → elige `castawind-galeria`.
-3. Los ajustes se rellenan solos desde `netlify.toml`. Antes de desplegar, abre **Environment variables** y añade `GOOGLE_API_KEY` = tu clave del paso 4.
+3. Este proyecto no usa `netlify.toml`: Netlify detecta solo la carpeta `netlify/functions`. Build command `npm run build`, Publish directory `dist` (con *Base directory* en la carpeta del proyecto si está dentro de otra). Antes de desplegar, abre **Environment variables** y añade `GOOGLE_API_KEY` = tu clave del paso 4.
 4. **Deploy**. Tarda ~1 minuto.
 
 ### 7. Enlace definitivo

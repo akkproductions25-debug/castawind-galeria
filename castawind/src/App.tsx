@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { siteConfig } from "../site.config";
-import { Photo, fallbackUrl, thumbUrl } from "./types";
+import { Photo, thumbSources } from "./types";
 import Viewer from "./Viewer";
 
 const CACHE_KEY = "castawind:catalog:v1";
@@ -16,7 +16,7 @@ function useCatalog() {
       if (cached) setPhotos(JSON.parse(cached)); // muestra al instante lo último que vio
     } catch { /* sin caché */ }
     try {
-      const r = await fetch("/api/photos");
+      const r = await fetch("/.netlify/functions/photos");
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Error al cargar la galería");
       setPhotos(d.photos);
@@ -38,10 +38,11 @@ function useCols() {
 
 function Tile({ p, onOpen }: { p: Photo; onOpen: () => void }) {
   const [ok, setOk] = useState(false);
+  const [n, setN] = useState(0);
+  const srcs = thumbSources(p.id, 640);
   return (
     <button className={"tile" + (ok ? " in" : "")} style={{ aspectRatio: `${p.w} / ${p.h}` }} onClick={onOpen} aria-label={`Abrir ${p.name}`}>
-      <img src={thumbUrl(p, 640)} alt="" loading="lazy" decoding="async" onLoad={() => setOk(true)}
-        onError={(e) => { const f = fallbackUrl(p, 640); if (e.currentTarget.src !== f) e.currentTarget.src = f; }} />
+      <img src={srcs[n]} alt="" loading="lazy" decoding="async" onLoad={() => setOk(true)} onError={() => n < srcs.length - 1 && setN(n + 1)} />
     </button>
   );
 }

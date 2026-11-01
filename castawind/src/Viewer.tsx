@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Photo, downloadUrl, fallbackUrl, mb, thumbUrl } from "./types";
+import { Photo, downloadUrl, mb, thumbSources } from "./types";
 
 interface Props { photos: Photo[]; index: number; onIndex: (i: number) => void; onClose: () => void }
 const MAX = 5;
@@ -9,7 +9,8 @@ export default function Viewer({ photos, index, onIndex, onClose }: Props) {
   const p = photos[index];
   const [t, setT] = useState({ s: 1, x: 0, y: 0 });
   const [hiLoaded, setHiLoaded] = useState(false);
-  const [hiSrc, setHiSrc] = useState(thumbUrl(p, 1920));
+  const [loN, setLoN] = useState(0);
+  const [hiN, setHiN] = useState(0);
   const stage = useRef<HTMLDivElement>(null);
   const pts = useRef(new Map<number, { x: number; y: number }>());
   const st = useRef({ d: 0, s: 1, x: 0, y: 0, tx: 0, ty: 0 });
@@ -22,10 +23,10 @@ export default function Viewer({ photos, index, onIndex, onClose }: Props) {
   };
   const zoom = (s: number) => setT((o) => (s <= 1 ? { s: 1, x: 0, y: 0 } : limit(clamp(s, 1, MAX), o.x, o.y)));
 
-  useEffect(() => { setT({ s: 1, x: 0, y: 0 }); setHiLoaded(false); setHiSrc(thumbUrl(p, 1920)); }, [p.id]);
+  useEffect(() => { setT({ s: 1, x: 0, y: 0 }); setHiLoaded(false); setLoN(0); setHiN(0); }, [p.id]);
   useEffect(() => {
     // precarga las vecinas en 1920 px
-    [1, -1].forEach((d) => { const q = photos[(index + d + photos.length) % photos.length]; new Image().src = thumbUrl(q, 1920); });
+    [1, -1].forEach((d) => { const q = photos[(index + d + photos.length) % photos.length]; new Image().src = thumbSources(q.id, 1920)[0]; });
   }, [index, photos]);
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
@@ -79,9 +80,9 @@ export default function Viewer({ photos, index, onIndex, onClose }: Props) {
         onWheel={(e) => zoom(t.s - e.deltaY * 0.004)}
         onClick={(e) => { if (e.target === e.currentTarget && t.s === 1) onClose(); }}>
         <div className="v-img" key={p.id} style={{ transform: `translate(${t.x}px,${t.y}px) scale(${t.s})`, transition: pts.current.size ? "none" : "transform .2s ease" }}>
-          <img className="lo" src={thumbUrl(p, 640)} alt="" draggable={false} onError={(e) => { e.currentTarget.src = fallbackUrl(p, 640); }} />
-          <img className={"hi" + (hiLoaded ? " in" : "")} src={hiSrc} alt={`Fotografía ${p.name}`} draggable={false}
-            onLoad={() => setHiLoaded(true)} onError={() => { if (!hiSrc.includes("drive.google.com")) setHiSrc(fallbackUrl(p, 1920)); }} />
+          <img className="lo" src={thumbSources(p.id, 640)[loN]} alt="" draggable={false} onError={() => setLoN((n) => Math.min(n + 1, 1))} />
+          <img className={"hi" + (hiLoaded ? " in" : "")} src={thumbSources(p.id, 1920)[hiN]} alt={`Fotografía ${p.name}`} draggable={false}
+            onLoad={() => setHiLoaded(true)} onError={() => setHiN((n) => Math.min(n + 1, 1))} />
         </div>
         {!hiLoaded && <div className="v-spin" aria-hidden />}
       </div>

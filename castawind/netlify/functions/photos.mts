@@ -15,7 +15,7 @@ export default async (): Promise<Response> => {
     do {
       const url = new URL(API);
       url.searchParams.set("q", `'${folder}' in parents and trashed=false and mimeType contains 'image/'`);
-      url.searchParams.set("fields", "nextPageToken,files(id,name,size,mimeType,thumbnailLink,imageMediaMetadata(width,height,rotation))");
+      url.searchParams.set("fields", "nextPageToken,files(id,name,size,mimeType,imageMediaMetadata(width,height,rotation))");
       url.searchParams.set("orderBy", "name");
       url.searchParams.set("pageSize", "1000");
       url.searchParams.set("supportsAllDrives", "true");
@@ -38,8 +38,6 @@ export default async (): Promise<Response> => {
           size: Number(f.size) || 0,
           w: (swap ? m.height : m.width) || 3,
           h: (swap ? m.width : m.height) || 2,
-          // base de la miniatura: se le añade =w640 / =w1920 en el navegador
-          tb: f.thumbnailLink ? String(f.thumbnailLink).replace(/=s\d+$/, "") : null,
         });
       }
       pageToken = data.nextPageToken ?? "";
