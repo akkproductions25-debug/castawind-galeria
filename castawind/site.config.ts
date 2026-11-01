@@ -13,5 +13,6 @@ export const siteConfig = {
   eventName: "CASTAWIND",
   tagline: "Los mejores momentos de una noche para recordar",
   eventDate: "31 d’octubre · 20:30",
+  lineup: ["Adrián Espinola", "Alex Cornejo", "DJ Yenieli"],
   eventPlace: "Pavelló Municipal",
 };
